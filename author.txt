@@ -1,0 +1,93 @@
+BOOK DEALER DATABASE
+AUTHOR (author-id:int, name:string, city:string, country:string)
+PUBLISHER (publisher-id:int, name:string, city:string, country:string)
+CATALOG (book-id:int, title:string,author-id:int, publisher-id:int, category-id:int, year:int, price:int)
+CATEGORY (category-id:int, description:string)
+ORDER-DETAILS (order-no:int, book-id:int, quantity:int)
+Get the titles of all the books that are not in the FICTION category
+
+select c.title from catalog c,category ca 
+where ca.description!='fiction'  and ca.categoryid=c.categoryid;
+-----------------------------------------------------------------------------------------------------------------
+Get the names of all books whose price is greater than the maximum of the category averages.
+select title from catalog where price > (select max(avg(price)) from catalog
+group by categoryid);
+-----------------------------------------------------------------------------------------------------------------
+Get the names of all books that are in the BOOK table and for which an order is placed.
+select c.title from catalog c,orderdetails o where c.bookid=o.bookid;
+-----------------------------------------------------------------------------------------------------------------
+Get the names of all books that are not in the ORDER table.
+select c.title from catalog c,orderdetails o where c.bookid not exists 
+          (select bookid from orderdetails);
+-----------------------------------------------------------------------------------------------------------------
+Get the title, author name and publisher name where publisher name has an underscore.
+select p.name,a.name,c.title from catalog c,author a,publisher p 
+where instr(p.name,'_')>0 and  c.authorid=a.authorid and  p.publisherid=c.publisherid;
+-----------------------------------------------------------------------------------------------------------------
+Get all the book names where price is null.
+select c.title from catalog c where c.price is null;
+-----------------------------------------------------------------------------------------------------------------
+Get the publisher, the average,maximum and minimum book prices of all the publisher other that “McGraw-Hill”
+select p.name,max(c.price),avg(c.price),min(c.price)  from catalog c,publisher p
+ where p.publisherid=c.publisherid and p.name!=' McGraw-Hill '  group by p.name;
+-----------------------------------------------------------------------------------------------------------------
+Get publisher, the average, maximum and minimum book prices of all publisher who have more that 2 books listed in catalog table.
+select p.name,avg(c.price),max(c.price),min(c.price) from catalog c,publisher p
+where p.publisherid=c.publisherid group by c.publisherid,p.name having count(*)>2;
+-----------------------------------------------------------------------------------------------------------------
+Get all the books details whose price is greater than 300 in descending order of price.
+          select * from catalog where price > 300 order by price desc.
+-----------------------------------------------------------------------------------------------------------------
+Get the titles of all the books in the CATALOG table whose price is greater than the average price.
+select title from catalog where price > (select avg(price)  from catalog);
+-----------------------------------------------------------------------------------------------------------------
+Get the names of all books for which an order has been placed.
+select c.title  from catalog c,orderdetails o where o.bookid=c.bookid;
+-----------------------------------------------------------------------------------------------------------------
+get the title and price of all the books whose price is less than the average price of the books.
+select title,price from catalog where price < (select avg(price) from catalog);
+-----------------------------------------------------------------------------------------------------------------
+Get the names of all authors who have more than two books in the catalog.
+select a.name,count(*)  from author a,catalog c  where a.authorid=c.authorid
+group by a.name having count(*)>2;
+-----------------------------------------------------------------------------------------------------------------
+Get the title and price of all the books whose price is greater than the maximum of the category averages.
+select c.title,c.price from catalog c where c.price >  (select max(avg(price))
+ from catalog  group by categoryid);
+-----------------------------------------------------------------------------------------------------------------
+Get the details of the authors whose books are being sold from the book house
+select a.name from author a,catalog c,orderdetails o 
+where o.bookid=c.bookid and c.authorid=a.authorid;
+-----------------------------------------------------------------------------------------------------------------
+Get the title and price of all the books whose price is greater than the average price of the books in the “Business”category.
+select c.title,c.price  from catalog c  where c.price > (select avg(c.price)
+ from catalog c,category co where co.description='business' and co.categoryid=c.categoryid);
+-----------------------------------------------------------------------------------------------------------------
+Get the details of the titles whose price is greater than the average price and whose year of publishing is greater than the average year of publishing.
+select c.title  from catalog c where c.price > (select avg(price)  from catalog) 
+ and  c.year > (select avg(year)  from catalog);
+-----------------------------------------------------------------------------------------------------------------
+Get the title,year and price of all the books in the ascending order of year of publishing for which an order is placed.
+select c.title,c.year,c.price  from catalog c,orderdetails o  where o.bookid=c.bookid
+ order by c.year asc;
+-----------------------------------------------------------------------------------------------------------------
+Get the book details and category details of all books whose price is greater than 1000.
+select c.title,c.categoryid from catalog c where c.price > 1000;
+-----------------------------------------------------------------------------------------------------------------
+Find out the titles that have the same price.
+select distinct t1.title from catalog t1,catalog t2 where t1.price = t2.price and t1.title != t2.title;
+-----------------------------------------------------------------------------------------------------------------
+Get the details of all authors and publishers in India ordered by name.
+(select name  from author  where country='india')  union
+(select name  from publisher  where country='india') order by name;
+-----------------------------------------------------------------------------------------------------------------
+Find the author of the book which has maximum sales.
+select name, authored from author where authored in( select authored from catlog where bookid in
+(select bookid from odetails where quantity in (select max(quantity) from odetails));
+-----------------------------------------------------------------------------------------------------------------
+23. Demonstrate how you increase the price of books published by a specific publisher by 10%.
+Select * from catlog; (before updation)
+update catlog set price= price +(price *0.10) where publisherid =’& pubid’;        
+       [OR]
+
+update catalog set price=price*1.10 where publisherid

@@ -1,0 +1,82 @@
+BRANCH(branch-name:string, branch-city:string, assets:real)
+ACCOUNT(accno:int, branch-name:string, balance:real)
+DEPOSITOR(customer-name:string, accno:int)
+CUSTOMER(customer-name:string, customer-street:string, customer-city:string)
+LOAN(loan-number:int, branch-name:string, amount:real)
+BORROWER(customer-name:string, loan-number:int)
+1. Find the loan number of those loans with loan amount  between 50000 and 100000.
+select loanno from loan where amount between 100000 and 500000;
+2.For all customers, who have a loan from the bank find their names, loan numbers & loan amount.
+select c.customername,l.loanno,l.amount  from borrower c,loan l
+where l.loanno=c.loanno;
+3.Find the customer names, loan numbers loan amount for all loans at Brooklyn Branch.
+select b.customername,l.loanno,l.amount from borrower b,loan l 
+where l.branchname='mgr' and l.loanno=b.loanno;
+4.Find the names of all branches that have assets greater than at least one branch located in Frankfurt.
+select branchname from branch where assets > any (select assets
+from branch  where branchcity='hyderabad');
+5.List in  alphabetical order all customers who have a loan at Perryridge branch.
+select b.customername from borrower b,loan l where l.branchname='mgr' and l.loanno=b.loanno order by b.customername;
+6.Find the names of all customers who street address includes the substring “Main”.
+select customername from customer1  where customerstreet like '%road%';
+
+7.List the loan numbers in descending order of amount
+select loanno,amount from loan order by amount desc;
+8.Find all customers having a loan, an account,  or both at the bank(union, & union all).
+(select d.customername from depositor d) union (select customername from borrower);
+9.To find all customers who have both a loan and an account at the bank.
+select unique borrower.customername from borrower,depositor where borrower.customername=depositor.customername; 
+10.To find all customers who have an account but no loan at the bank.
+select customername from depositor where customername not in(select customername
+from borrower);
+11.Find the average account balance at the SOMAJIGUDA branch.
+ SELECT AVG(BALANCE)  FROM ACCOUNT WHERE BRANCHNAME='SOMAJIGUDA';
+12.Find the average account balance at each branch
+SELECT AVG(BALANCE),BRANCHNAME  FROM ACCOUNT GROUP BY BRANCHNAME;
+13.Find the number of depositor for each branch.
+ SELECT A.BRANCHNAME,COUNT(*)  FROM ACCOUNT A,DEPOSITOR D
+ WHERE A.ACCNO=D.ACCNO  GROUP BY A.BRANCHNAME;
+14.Find the branch where  the average account balance is more than Rs.13000 (group by, having)
+ SELECT BRANCHNAME  FROM ACCOUNT  HAVING AVG(BALANCE)>13000
+GROUP BY BRANCHNAME;
+15.Find the average balance for each customer who lives in Horriron & has at least 3 account.
+ SELECT AVG(A.BALANCE)  FROM CUSTOMER1 C,ACCOUNT A,DEPOSITOR D
+WHERE C.CUSTOMERCITY='BANGALORE' AND A.ACCNO=D.ACCNO
+HAVING COUNT(*)>=3 GROUP BY D.CUSTOMERNAME;
+16. Find bank accounts with a balance under $700:
+SELECT account_number, balance FROM account WHERE balance < 700;
+17. Find bank accounts with a balance under $700 with increasing order of bank balance:
+SELECT account_number, balance FROM account WHERE balance < 700 ORDER BY balance;
+“Retrieve a list of all bank branch details, ordered by branch city, with each city’s branches listed in reverse order of holdings.” SELECT * FROM branch ORDER BY branch_city ASC, assets DESC;
+18. “Find the average loan amount for each branch.
+” SELECT branch_name, AVG(amount) AS avg_amt FROM loan GROUP BY branch_name;
+19. “Find all customers with more than one loan.
+” SELECT customer_name, COUNT(*) AS num_loans FROM borrower GROUP BY customer_name HAVING COUNT(*) > 1;
+20.“Select all customer names from depositor relation, that also appear somewhere in borrower relation.”
+ SELECT DISTINCT customer_name FROM depositor WHERE customer_name IN ( SELECT customer_name FROM borrower)
+21.find the largest loan at each branch 
+SELECT branch_name, MAX(amount) FROM loan GROUP BY branch_name
+22. “Find customers with an account but not a loan.”
+ SELECT DISTINCT customer_name FROM depositor d WHERE NOT EXISTS ( SELECT * FROM borrower b WHERE b.customer_name = d.customer_name);
+23. “Find customers with an account but not a loan.” 
+SELECT DISTINCT customer_name FROM depositor d WHERE NOT EXISTS ( SELECT * FROM borrower b WHERE b.customer_name = d.customer_name);
+24.  “Find all branches with assets greater than at least one branch in Brooklyn.” 
+SELECT branch_name FROM branch WHERE assets > SOME ( SELECT assets FROM branch WHERE branch_name='Brooklyn');
+25. “Find branches with assets greater than all branches in Brooklyn.”
+ SELECT branch_name FROM branch WHERE assets > ALL ( SELECT assets FROM branch WHERE branch_name='Brooklyn');
+Or
+SELECT branch_name FROM branch WHERE assets > (SELECT MAX(assets) FROM branch WHERE branch_name='Brooklyn');
+26. “Find all cities with more than two customers living in the city.” 
+SELECT customer_city, COUNT(*) AS num_customers FROM customer GROUP BY customer_city HAVING COUNT(*) > 2; 
+ Or, can write:
+ SELECT customer_city, num_customers FROM (SELECT customer_city, COUNT(*) FROM customer GROUP BY customer_city) AS counts (customer_city, num_customers) WHERE num_customers > 2;
+27. Add 2% interest to all bank account balances with a balance of $500 or less. 
+UPDATE account SET balance = balance * 1.02 WHERE balance <= 500;
+28. Delete all account  tuples at every branch located at BANGALORE
+DELETE FROM ACCOUNT WHERE BRANCHNAME IN( SELECT BRANCHNAME
+FROM BRANCH WHERE BRANCHCITY='BANGALORE');
+29. Find customers who hare borrowers are account holder.
+SELECT CUSTOMERNAME  FROM BORROWER WHERE CUSTOMERNAME IN (SELECT CUSTOMERNAME  FROM DEPOSITOR);
+30. Find all customers who have an both an account & loan at the bank
+ (SELECT CUSTOMERNAME  FROM DEPOSITOR)  INTERSECT
+ (SELECT CUSTOMERNAME  FROM BORROWER);
